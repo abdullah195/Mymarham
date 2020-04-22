@@ -27,4 +27,8 @@ Route::get('/get_speciality_areas_of_interest',"ServiceController@get_speciality
 Route::get('/get_add_on_areas_of_interest',"ServiceController@get_add_on_areas_of_interest");
 Route::post('/get_procedures_by_speciality',"ServiceController@get_procedures_by_speciality");
 
+//Route::post('/get_procedures_by_speciality',"ServiceController@get_procedures_by_speciality");
+//Route::post('/get_procedures_by_speciality',"ServiceController@get_procedures_by_speciality");
+
+
 
