@@ -6,84 +6,51 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Doctor;
 use Database;
+use phpDocumentor\Reflection\Types\Object_;
+use phpDocumentor\Reflection\Types\Parent_;
 
 
 class Doctorcontroller extends Controller
 {
 
-
-
-
-
     public $doctor;
-
     public function __construct(Doctor $doctor)
     {
         $this->doctor =$doctor;
     }
+
 
     function index(){
 
         $users = DB::table('users')->get();
         $categories = DB::table('categories')->select('catID','catName')->get();
         $specialities = DB::table('specialities')->select('spID', 'speciality')->get();
-
         $subspecialities = DB::table('specialities')->select('spID', 'speciality')->where('parent','33')->get();
+        $hospitals = DB::table('hospitals')->get();
 
-        return view('marham.add_doctor', compact('users','categories','specialities','subspecialities'));
+
+        return view('marham.add_doctor', compact('users','categories','specialities','subspecialities','hospitals'));
+
+
 
     }
 
 
-    function changespeciality(request $request){
-
-
-        if ($request->action ==='subspecialities'){
+    function getsubspeciality(request $request){
 
             $data= $request->spID;
-            $spid=response()->json($data);
-            $subspeciality = DB::table('specialities')->select('spID','speciality')->where('parent','=',$spid)->get();
-            
+            $subspeciality = DB::table('specialities')->select('spID','speciality')->where('parent','=',$data)->get();
 
-
-//            echo "<option value=''>--- Select Sub-Speciality ---</option>";
-//            foreach ($subspeciality as $key => $value) {
-//                echo '<option value="' . $value['spID'] . '">' . $value['speciality'] . '</option>';
-//            }
-
-
-        }
-        elseif ($request->action ==='defaultServices'){
-
-            $subspeciality=$request->action;
-
-//            $where = 'WHERE defaultService=1';
-//            if(!empty($specialityID)) {
-//                $where = "WHERE spID = $specialityID AND defaultService=1";
-//            }
-//            try {
-//                $stmt = Database :: prepare ( "SELECT sID, service, spID from  services $where ORDER BY service ASC ;" ) ;
-//                $stmt -> execute ( ) ;
-//                $result =  $stmt -> fetchAll (PDO::FETCH_ASSOC) ;
-//            } catch(PDOException $e) {
-//                return FALSE;
-//            }
-//            return $result;
-
+        $obj = json_decode($subspeciality);
+        $count=0;
+        echo '<option value="">--- Select Sub-Speciality ---</option>';
+        foreach ($obj as $key =>$value) {
+            echo '<option value="' . $value->spID . '">' . $value->speciality . '</option>';
         }
 
-
-
-
-
-
-
-
-        return $subspeciality;
-
+            return ;
 
     }
-
 
 
 

@@ -15,6 +15,13 @@ class Doctor
 
     var $limit = 25;
 
+
+    public function abcd(){
+
+
+
+    }
+
     public function getDoctorDetailForForm($id='') {
         $result = FALSE;
 

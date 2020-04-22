@@ -19,5 +19,12 @@ Route::get('/', function () {
 
 
 Route::get('/adddoctor',"Doctorcontroller@index");
-Route::post('/adddoctor',"Doctorcontroller@changespeciality");
+Route::post('/getsubspeciality',"Doctorcontroller@getsubspeciality");
+Route::post('/defaultServices',"ServiceController@getdefaultServices");
+Route::post('/addonServices',"ServiceController@getaddonServices");
+
+Route::get('/get_speciality_areas_of_interest',"ServiceController@get_speciality_areas_of_interest");
+Route::get('/get_add_on_areas_of_interest',"ServiceController@get_add_on_areas_of_interest");
+Route::post('/get_procedures_by_speciality',"ServiceController@get_procedures_by_speciality");
+
 

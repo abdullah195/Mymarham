@@ -97,16 +97,9 @@
             <label class="day_label2" for="home_service">Willing to see patient at home</label>
         </div>
     </div>
-    <div class="row">
-        <div class="col-md-6">
-            <input  type="checkbox" name="learn_more" value="1" id="learn_more">
-            <label class="day_label2" for="learn_more">Want to know more About Marham</label>
-        </div>
-    </div>
 
 
     <div class="row">
-
         <div class="col-md-6">
             <label for="docEmail">Specialty<span style="color: red">*</span></label>
             <select name="specialities" id="specialities1" class="form-control"  required="required">
@@ -122,10 +115,10 @@
     </div>
 
 
-    <div id="subspecialityDiv" class="form-row">
-        <div class="column-half">
+    <div id="subspecialityDiv" class="row">
+        <div class="col-md-6">
             <label for="subspecialities">Sub Speciality <span style="color: red">*</span></label>
-            <select name="subspecialities" id="subspecialities">
+            <select name="subspecialities" class="form-control" id="subspecialities">
             </select>
         </div>
     </div>
@@ -176,7 +169,7 @@
     </div>
 
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-12">
             <label for="docDetails">Details</label>
             <textarea class="form-control" name="docDetails"  id="docDetails" rows="7" placeholder="Doctor Details"></textarea>
         </div>
@@ -187,41 +180,44 @@
             <label for="docDetails">Appointment Instructions:</label>
             <textarea class="form-control" name="appointment_instructions" id="appointment_instructions" rows="7" placeholder="Appointment Instructions"></textarea>
         </div>
+
+        <div class="col-md-12">
+            <label for="sales_notes">Notes for Sales Team:</label>
+            <textarea id="sales_notes"  class="form-control" name="sales_notes" rows="7" placeholder="Notes for Sales Team"></textarea>
+        </div>
     </div>
+
+
 
 
     <div class="dyn">
-
         <fieldset id="buildtimings" class="the-fieldset">
-
             <legend class="the-legend">Timings <span style="color: red">*</span></legend>
-
             <select id="procedureToDelete" name="procedureToDelete[]" multiple hidden>
             </select>
-
         </fieldset>
-
         <br /><input type="button" value="Add New Time" class="add" id="add" />
-
     </div>
+
+
+
 
     <link rel="stylesheet" type="text/css" href="assets/jquery.timeentry.css">
     <script type="text/javascript" src="assets/jquery.plugin.js"></script>
     <script type="text/javascript" src="assets/jquery.timeentry.js"></script>
 
-
     <script>
         var time_counter = '0';
-
         var procedures = new Array();
 
-        $(document).ready(function() {
 
+
+        $(document).ready(function() {
 
             $("#subspecialityDiv").hide();
             {{--var subSPID = <?php echo $subspID; ?>;--}}
             {{--if(subSPID > 0) {--}}
-            {{--    $("#subspecialityDiv").show();--}}
+            //     $("#subspecialityDiv").show();
             {{--}--}}
 
 
@@ -235,9 +231,10 @@
 
             $("#specialities1").change(function() {
 
+                alert("specialities1 11");
                 var spID = this.value;
                 var request1 = $.ajax({
-                    url: "adddoctor?action=subspecialities",
+                    url: "getsubspeciality",
                     method: "POST",
                     data: { spID : spID },
                     dataType: "html"
@@ -245,11 +242,8 @@
 
 
                 request1.done(function( data ) {
-                    /********************/
-                    alert(data);
-                    alert(data.length);
 
-                    if(data.length < 60) {
+                    if(data.length<56) {
 
                         $("#subspecialities").empty();
                         $("#subspecialityDiv").hide();
@@ -258,31 +252,30 @@
                         $('#add_on_areas_of_interest_box').html("");
 
                         var request = $.ajax({
-                            url: "adddoctor?action=defaultServices",
+                            url: "defaultServices",
                             method: "POST",
                             data: { spID : spID },
                             dataType: "html"
                         });
 
                         var request2 = $.ajax({
-                            url: "index.php?action=addonServices",
+                            url: "addonServices",
                             method: "POST",
-
                             data: { spID : spID },
-
                             dataType: "html"
-
                         });
+
 
                         var areasOfInterestRequest = $.ajax({
-                            url: "index.php?action=get_speciality_areas_of_interest",
+                            url: "get_speciality_areas_of_interest",
                             method: "GET",
-                            data: {spID, spID},
+                            data: { spID : spID},
                             dataType: "html"
                         });
 
+
                         var AddOnareasOfInterestRequest = $.ajax({
-                            url: "index.php?action=get_add_on_areas_of_interest",
+                            url: "get_add_on_areas_of_interest",
                             method: "GET",
                             dataType: "html"
                         });
@@ -291,8 +284,6 @@
                         $('#select_all_services').prop('checked', false);
 
                         request.done(function( data ) {
-
-                            alert(data);
 
                             $('#services_box').html(data);
 
@@ -319,15 +310,20 @@
                         });
 
                         areasOfInterestRequest.done(function(data){
+
+                            alert("get_speciality_areas_of_interest"+data);
                             $("#speciality_areas_of_interest_box").html(data);
                         });
 
                         areasOfInterestRequest.fail(function( jqXHR, textStatus ) {
+                           alert("failed areas of interest");
                             $('#speciality_areas_of_interest_box').html('');
 
                         });
 
                         AddOnareasOfInterestRequest.done(function(data){
+
+                            alert("add_on_areas_of_interest_box"+data);
                             $("#add_on_areas_of_interest_box").html(data);
                         });
 
@@ -350,10 +346,7 @@
 
                         $("#subspecialities").empty();
                         $("#subspecialityDiv").show();
-
-
                         $("#subspecialities").append(data);
-
 
                     }
 
@@ -372,15 +365,139 @@
 
             });
 
+        //////////////////
 
+            $("#subspecialities").change(function() {
+
+                var spID = this.value;
+
+                if(spID > 0) {
+
+                    var request = $.ajax({
+
+                        url: "index.php?action=defaultServices",
+
+                        method: "POST",
+
+                        data: { spID : spID },
+
+                        dataType: "html"
+
+                    });
+
+                    var request2 = $.ajax({
+
+                        url: "index.php?action=addonServices",
+
+                        method: "POST",
+
+                        data: { spID : spID },
+
+                        dataType: "html"
+
+                    });
+
+                    var areasOfInterestRequest = $.ajax({
+                        url: "index.php?action=get_speciality_areas_of_interest",
+                        method: "GET",
+                        data: {subSpID: spID},
+                        dataType: "html"
+                    });
+
+                    var AddOnareasOfInterestRequest = $.ajax({
+                        url: "index.php?action=get_add_on_areas_of_interest",
+                        method: "GET",
+                        dataType: "html"
+                    });
+
+
+                    $('#select_all_services').prop('checked', false);
+
+                    request.done(function( data ) {
+
+                        $('#services_box').html(data);
+
+                    });
+
+                    request.fail(function( jqXHR, textStatus ) {
+
+                        $('#services_box').html('Please select speciality');
+
+                    });
+
+                    request2.done(function( data ) {
+
+                        $('#addonServices_box').html(data);
+
+                    });
+
+                    request2.fail(function( jqXHR, textStatus ) {
+
+                        $('#addonServices_box').html('');
+
+                    });
+
+                    areasOfInterestRequest.done(function(data){
+                        $("#speciality_areas_of_interest_box").html(data);
+                    });
+
+                    areasOfInterestRequest.fail(function( jqXHR, textStatus ) {
+                        $("#speciality_areas_of_interest_box").html('');
+
+                    });
+
+                    AddOnareasOfInterestRequest.done(function(data){
+                        $("#add_on_areas_of_interest_box").html(data);
+                    });
+
+                    AddOnareasOfInterestRequest.fail(function( jqXHR, textStatus ) {
+                        $('#add_on_areas_of_interest_box').html('');
+
+                    });
+
+                }
+
+                else {
+
+                    $('#services_box').html('Please select speciality');
+
+                    $('#addonServices_box').html('Please select speciality');
+
+                }
+
+            });
+
+
+
+
+            $("#specialities1").change(function(){
+
+
+                var spID = $(this).val();
+                $.ajax({
+                    type: 'POST',
+                    url: "get_procedures_by_speciality",
+                    data: {
+                        spID: spID
+                    },
+                    success: function(data){
+                        if(data.status){
+                            procedures = data.procedures;
+
+                        }
+                    }
+                });
+            });
+
+
+
+        //////////////////////////////
 
 
             $("#add").click(function() {
 
                 procedureCounter =0;
                 time_counter++;
-
-
 
                 var fieldWrapper = $("#buildtimings");
 
@@ -443,7 +560,6 @@
                 fieldWrapper.append(fName);
 
                 $("#buildyourform").append(fieldWrapper);
-
                 if(procedures){
                     $.each(procedures, function (i, procedure) {
                         $('#procedures_'+time_counter+'_'+procedureCounter).append($('<option>', {
@@ -473,7 +589,13 @@
                     '<label for="hospitals_'+time_counter+'">Hospital</label>'+
                     '<select name="hospitals['+time_counter+']" class="form-control" id="hospitals_'+time_counter+'" onChange="update_address('+ time_counter +', this)">'+
                     '<option value="">--Select Hospital--</option>'+
-                    '<?php echo "Helo" ?>'+
+                    '@foreach($hospitals as $hospital)\n' +
+                    {{--'              echo \'<span style="display:none;" id="hidden_city_{{$hospital->hospitalID}}">{{$hospital->city}}</span>;' +--}}
+                    {{--'            echo \'<span style="display:none;" id="hidden_address_{{$hospital->hospitalID}}">{{$hospital->address}},{{$hospital->city}}\'</span>\';\n' +--}}
+                    {{--'            echo \'<span style="display:none;" id="hidden_apptPhone_\'.{{$hospital->hospitalID}}.\'">\'.{{$hospital->phone}}.\'</span>\';\n' +--}}
+                    {{--'            echo \'<span style="display:none;" id="hidden_hospitalAdminNumber_\'.{{$hospital->hospitalID}}.\'">\'.{{$hospital->admin_number}}.\'</span>\';\n ' +--}}
+                    '                <option value={{$hospital->hospitalID}}>{{$hospital->name}}</option>\n' +
+                    '@endforeach'+
                     '</select>'+
                     '</div>'+
                     '<div class="column-half">'+
@@ -488,59 +610,59 @@
                     '</div>'+
                     '</div>'
                     ;
+
+
             }
 
 
-
             function appendDoctorHospitalRefferal(time_counter){
+
                 procedureCounter++;
                 return '<label style="padding-left: 15px; font-weight: bold;">Add Doctor Consultancy Referral:</label>'+
                     '<div class="form-row">'+
                     '<div class="column-half procedure-checkboxes">'+
                     '<label class="radio-inline">'+
-                    '<input type="radio" name="consultancy_fee_share_on['+time_counter+']" id="consultancy_fee_share_on_'+time_counter+'" value="1" checked>Share On Complete Fee'+
+                    '<input type="radio" class="form-control" name="consultancy_fee_share_on['+time_counter+']" id="consultancy_fee_share_on_'+time_counter+'" value="1" checked>Share On Complete Fee'+
                     '</label>'+
                     '<label class="radio-inline">'+
-                    '<input type="radio" name="consultancy_fee_share_on['+time_counter+']" id="consultancy_fee_share_on_'+time_counter+'" value="2">Share On Doctor Fee'+
+                    '<input type="radio" class="form-control" name="consultancy_fee_share_on['+time_counter+']" id="consultancy_fee_share_on_'+time_counter+'" value="2">Share On Doctor Fee'+
                     '</label>'+
                     '</div>'+
                     '</div>'+
                     '<div class="form-row">'+
                     '<div class="column-onethird">'+
                     '<label for="docFee_'+time_counter+'">Complete Fees:</label>'+
-                    '<input type="text" name="docFee['+time_counter+']" id="docFee_'+time_counter+'" placeholder="Complete Fee" />'+
+                    '<input type="text" class="form-control" name="docFee['+time_counter+']" id="docFee_'+time_counter+'" placeholder="Complete Fee" />'+
                     '</div>'+
                     '<div class="column-onethird">'+
                     '<label for="docFeeAfterHospitalShare_'+time_counter+'">Doctor Fees:</label>'+
-                    '<input type="text" name="docFeeAfterShare['+time_counter+']" id="docFeeAfterShare_'+time_counter+'" Placeholder="Doctor Fee">'+
+                    '<input type="text" class="form-control" name="docFeeAfterShare['+time_counter+']" id="docFeeAfterShare_'+time_counter+'" Placeholder="Doctor Fee">'+
                     '</div>'+
                     '<div class="column-onethird">'+
                     '<label for="consultancy_referral_'+time_counter+'" for="">Referral%:</label>'+
-                    '<input type="text" name="consultancy_referral['+time_counter+']" id="consultancy_referral_'+time_counter+'" Placeholder="Consultancy Fee">'+
+                    '<input type="text" class="form-control" name="consultancy_referral['+time_counter+']" id="consultancy_referral_'+time_counter+'" Placeholder="Consultancy Fee">'+
                     '</div>'+
                     '</div>'+
-
-
                     '<div class="procedure_fields_wrap_father_'+time_counter+'" hospitalCounter="'+time_counter+'">'+
                     '<label style="padding-left: 15px; font-weight: bold;">Add Doctor Procedures:</label>'+
-                    '<select id="number_of_procedures_'+time_counter+'" name="number_of_procedures_'+time_counter+'[]" multiple hidden>'+
+                    '<select id="number_of_procedures_'+time_counter+'" class="form-control" name="number_of_procedures_'+time_counter+'[]" multiple hidden>'+
                     '<option value="0_1" selected>0</option>'+
                     '</select>'+
                     '<div class="procedure_fields_wrap">'+
                     '<div class="form-row">'+
                     '<div class="column-half">'+
                     '<label class="radio-inline">'+
-                    '<input type="radio" name="procedure_fee_share_on_'+time_counter+'_'+procedureCounter+'" value="1" checked>Share On Complete Fee'+
+                    '<input type="radio" class="form-control" name="procedure_fee_share_on_'+time_counter+'_'+procedureCounter+'" value="1" checked>Share On Complete Fee'+
                     '</label>'+
                     '<label class="radio-inline">'+
-                    '<input type="radio" name="procedure_fee_share_on_'+time_counter+'_'+procedureCounter+'" value="2">Share On Doctor Fee'+
+                    '<input type="radio" class="form-control" name="procedure_fee_share_on_'+time_counter+'_'+procedureCounter+'" value="2">Share On Doctor Fee'+
                     '</label>'+
                     '</div>'+
                     '</div>'+
                     '<div class="form-row">'+
                     '<div class="column-twice">'+
                     '<label>Procedure Name:</label>'+
-                    '<select id="procedures_'+time_counter+'_'+procedureCounter+'" name="procedureName['+time_counter+'][]">'+
+                    '<select class="form-control" id="procedures_'+time_counter+'_'+procedureCounter+'" name="procedureName['+time_counter+'][]">'+
                     '<option value="">--Select Procedure--</option>'+
                     '</select>'+
                     '</div>'+
@@ -567,17 +689,11 @@
                     '</div>'+
                     '</div>';
 
-
             }
-
-
 
         });
 
-
-
     </script>
-
 
     <div class="form-row form-group margin-top-2">
         <fieldset class="the-fieldset">
@@ -758,11 +874,8 @@
         <div class="column-full"><input type="submit" class="btn-success" class="submit" name="send" id="send" value="Send" /></div>
     </div>
 
-
-
     </div>
 </div>
-
 
 </body>
 </html>
