@@ -28,9 +28,16 @@ class Doctorcontroller extends Controller
         $subspecialities = DB::table('specialities')->select('spID', 'speciality')->where('parent','33')->get();
         $hospitals = DB::table('hospitals')->get();
 
+        $specialitiesAndSubSpecialities = DB::table("specialities")->select('spID','parent','speciality','slug')
+            ->whereNotIn('spID',function($query){
+                $query->select('parent')->from('specialities');
+            })
+            ->orderBy('speciality')
+            ->get();
 
-        return view('marham.add_doctor', compact('users','categories','specialities','subspecialities','hospitals'));
 
+
+        return view('marham.add_doctor', compact('users','categories','specialities','subspecialities','hospitals','specialitiesAndSubSpecialities'));
 
 
     }
