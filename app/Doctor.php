@@ -4,8 +4,8 @@
 namespace App;
 use Illuminate\Support\Facades\DB;
 use Database;
-use http\Env\Response;
 use Illuminate\Database\Eloquent\Model;
+
 
 
 
@@ -13,313 +13,233 @@ class Doctor
 {
 
 
-    var $limit = 25;
+
+    function addDoctorDetail($post = ''){
 
 
-    public function abcd(){
-
-
-
-    }
-
-    public function getDoctorDetailForForm($id='') {
+        $id=0;
         $result = FALSE;
+        //If valid request
 
-        $where = "WHERE d.dlID = 0";
-        if(!empty($id)) {
-            $where = "WHERE d.dlID = $id";
-        }
-        try {
-
-            $stmt = Database :: prepare ( "SELECT d.dlID, d.docEmail, d.physician, d.relief, d.marham, d.pmdc, d.gender, d.surgen, d.docPhone, d.docDetails, d.docDegree, d.docName, d.docPic, d.docExp, s.speciality, d.subspID, s.spID, d.catID, d.interview, d.title, d.aboutMe, d.video_consultancy, d.home_service, d.learn_more, d.appointment_number,d.appointment_instructions, d.fix_fee, d.area_of_interest
-					from docdetails d
-					LEFT JOIN specialities s on d.spID = s.spID
-					$where " ) ;
-            $stmt -> execute ( ) ;
-            $qry_result =  $stmt -> fetchAll (PDO::FETCH_ASSOC) ;
-            if(!empty($qry_result))
-            {
-                $qry_result =  $qry_result[0] ;
-                $qry_result['docName'] = $qry_result['docName'];
-
-                //print_r($qry_result);
-                /*$services = $this->getDoctorServices($qry_result['dlID']);*/
-
-                $services = $this->getDoctorDefaultServices($qry_result['dlID']);
-                $addonServices = $this->getDoctorAddonServices($qry_result['dlID']);
-
-                //Get doctor added areas of interest
-                $areasOfInterest = $this->getDoctorAreasOfInterest($qry_result['dlID']);
-                $addonAreasOfInterest = $this->getDoctorAddonAreasOfInterest($qry_result['dlID']);
-
-                $specialities = $this->getDoctorSpecialities($qry_result['dlID']);
-
-                $hospitals = $this->getApttimes($qry_result['dlID']);
-                $qualifications = $this->getDoctorQualifications($qry_result['dlID']);
-                $publications = $this->getDoctorPublications($qry_result['dlID']);
-                $experiences = $this->getDoctorExperiences($qry_result['dlID']);
+        if(!empty($post)) {
+            try {
 
 
-                for ($s=0 ; $s<count($hospitals) ; $s++){
-                    $hospitals[$s]['hospitalAddress'] = ucwords(strtolower($hospitals[$s]['hospitalAddress']));
-                    $hospitals[$s]['hospitalName'] = ucwords(strtolower($hospitals[$s]['hospitalName']));
-                    // $result[$s]['docName'] = $result[$s]['docName'];
-                    //get doctor procedures
-                    $hospitals[$s]['doctorProcedures'] = $this->getDoctorProcedures($hospitals[$s]['doctorHospitalID']);
+                $docName = '';
+                if(isset($post['docName']) && !empty($post['docName'])) {
+                    $docName = $post['docName'];
                 }
 
-                $result = array_merge(array('details' => $qry_result), array('hospitalTimings' => $hospitals, 'services' => $services, 'qualifications' => $qualifications, 'publications' => $publications, 'experiences' => $experiences, 'addonServices' => $addonServices, 'areasOfInterest' => $areasOfInterest, 'addonAreasOfInterest' => $addonAreasOfInterest, 'specialities' => $specialities));
-                //$result = array_merge(array('details' => $qry_result), array('hospitalTimings' => $hospitals, 'services' => $services, 'specialities' => $specialities));
-                //echo "<pre>";print_r($result);exit;
+
+                $docEmail = '';
+                if(isset($post['docEmail']) && !empty($post['docEmail'])) {
+                    $docEmail = $post['docEmail'];
+                }
+
+
+                $categoryid =0;
+                if(isset($post['categoryid']) && !empty($post['categoryid'])) {
+                    $categoryid = $post['categoryid'];
+                }
+
+                $docDegree = '';
+                if(isset($post['docDegree']) && !empty($post['docDegree'])) {
+                    $docDegree = $post['docDegree'];
+                }
+
+
+                $docPic = '';
+                if(isset($post['docPic']) && !empty($post['docPic'])) {
+                    $docPic = $post['docPic'];
+                }
+
+
+
+                //doctor phone number
+                $docPhone = '';
+                if(isset($post['docPhone']) && !empty($post['docPhone'])) {
+                    $docPhone = $post['docPhone'];
+                }
+
+
+                //doctor assistant phone number
+                $appointment_number = '';
+                if(isset($post['appointment_number']) && !empty($post['appointment_number'])) {
+                    $appointment_number = $post['appointment_number'];
+                }
+
+
+                $pmdc = '';
+                if(isset($post['pmdc']) && !empty($post['pmdc'])) {
+                    $pmdc = $post['pmdc'];
+                }
+
+                $relief = '';
+                if(isset($post['relief']) && !empty($post['relief'])) {
+                    $relief = $post['relief'];
+                }
+
+
+                $marham = '';
+                if(isset($post['marham']) && !empty($post['marham'])) {
+                    $marham = $post['marham'];
+                }
+
+
+                $video_consultancy = '';
+                if(isset($post['video_consultancy']) && !empty($post['video_consultancy'])) {
+                    $video_consultancy = $post['video_consultancy'];
+                }
+
+
+                $home_service = 0;
+                if(isset($post['home_service']) && !empty($post['home_service'])) {
+                    $home_service = $post['home_service'];
+                }
+
+
+                $specialities = '';
+                if(isset($post['specialities']) && !empty($post['specialities'])) {
+                    $specialities = $post['specialities'];
+                }
+
+
+                $docExp = '';
+                if(isset($post['docExp']) && !empty($post['docExp'])) {
+                    $docExp = $post['docExp'];
+                }
+
+
+                $subspecialities = '';
+                if(isset($post['subspecialities']) && !empty($post['subspecialities'])) {
+                    $subspecialities = $post['subspecialities'];
+                }
+
+
+                $gender = '';
+                if(isset($post['gender']) && !empty($post['gender'])) {
+                    $gender = $post['gender'];
+                }
+
+
+                $fix_fee = '';
+                if(isset($post['fix_fee']) && !empty($post['fix_fee'])) {
+                    $fix_fee = $post['fix_fee'];
+                }
+
+
+                $physician = '';
+                if(isset($post['physician']) && !empty($post['physician'])) {
+                    $physician = $post['physician'];
+                }
+
+
+                $surgen = '';
+                if(isset($post['surgen']) && !empty($post['surgen'])) {
+                    $surgen = $post['surgen'];
+                }
+
+
+                $willing_for_video_consultancy = 0;
+                if(isset($post['video_consultancy']) && !empty($post['video_consultancy'])) {
+                    $willing_for_video_consultancy = $post['video_consultancy'];
+                }
+
+                $partnership_company_id = 0;
+                if(isset($post['partnership_company_id']) && !empty($post['partnership_company_id'])) {
+                    $partnership_company_id = $post['partnership_company_id'];
+                }
+
+
+                $docDetails = '';
+                if(isset($post['docDetails']) && !empty($post['docDetails'])) {
+                    $docDetails = $post['docDetails'];
+                }
+
+
+
+
+                $markedRed = isset($post['marked_red']) ? $post['marked_red'] : 0;
+
+
+                $salesNotes = isset($post['sales_notes']) ? str_replace("'", "`", $post['sales_notes']) : '';
+
+                $profileNotCompleted = isset($post['profile_not_completed']) ? $post['profile_not_completed'] : 0;
+                $firstComeFirstServe = isset($post['first_come_first_serve']) ? $post['first_come_first_serve'] : 0;
+
+
+                $onLeave = isset($post['on_leave']) ? $post['on_leave'] : 0;
+                $onLeaveFrom = isset($post['on_leave_from']) ? date('Y-m-d', strtotime($post['on_leave_from'])) : null;
+                $onLeaveTo = isset($post['on_leave_to']) ? date('Y-m-d', strtotime($post['on_leave_to'])) : null;
+
+                $appointmentInstructions = str_replace("'", "''", $post['appointment_instructions']);
+
+
+                $id = DB::table('docdetails')->insertGetId(
+                    [
+                        `surgen` => $surgen,
+                        `physician` => $physician,
+                        `docName` => $docName,
+                        `docExp` => $docExp,
+                        `docEmail` => $docEmail,
+                        `docPhone` => $docPhone,
+                        `docDetails` => $docDetails,
+                        `docDegree` => $docDegree,
+                        `catID` => $categoryid,
+                        `spID` => $specialities,
+                        `subspID` => $subspecialities,
+                        `relief` => $relief,
+                        `marham` => $marham,
+                        `pmdc` => $pmdc,
+                        `gender` => $gender,
+                        `willing_for_video_consultancy` => $willing_for_video_consultancy,
+                        `home_service` => $home_service ,
+                        `appointment_instructions` => $appointmentInstructions,
+                        `appointment_number` => $appointment_number,
+                        `fix_fee` => $fix_fee,
+                        `marked_red` => $markedRed,
+                        `sales_notes` => $salesNotes,
+                        `profile_not_completed` => $profileNotCompleted,
+                        `added_by_user_id` => '0',
+                        `on_leave` => $onLeave,
+                        `on_leave_from` => $onLeaveFrom,
+                        `on_leave_to` => $onLeaveTo,
+                        `first_come_first_serve` => $firstComeFirstServe
+                    ]
+                );
+
+
+//                if(isset($post['dlID']) && !empty($post['dlID'])) {
+//                    $lastId = $post['dlID'];
+//                    $docDetails = str_replace("'", "''", $post['docDetails']);
+//                    $leaveUpdateQuery = ($onLeave == 1) ? (" on_leave = 1, on_leave_from = '".$onLeaveFrom."', on_leave_to = '" . $onLeaveTo . "' ") : " on_leave = 0, on_leave_from = NULL, on_leave_to = NULL ";
+//                    $stmt = Database::prepare("UPDATE `docdetails` SET `surgen` = '".$surgen."',`physician` = '".$physician."',`docName` = '".$post['docName']."',`docExp`='".$post['docExp']."',`docEmail`='".$post['docEmail']."', `docPhone`='".$post['docPhone']."', `docDetails`='".$docDetails."' ,`docDegree`='".$post['docDegree']."', `catID`='".$post['catID']."', `spID`='". $post['specialities'] ."', `subspID`='". $post['subspecialities'] ."', `relief`='". $post['relief'] ."', `marham`='". $post['marham'] ."', `pmdc`='". $post['pmdc'] ."', `gender`='". $post['gender'] ."', `willing_for_video_consultancy` = ".$willing_for_video_consultancy.", `home_service` = ".$home_service.", `appointment_number` = '".$post['appointment_number']."', `appointment_instructions` = '".$appointmentInstructions."',  `fix_fee` = ".intval($post['fix_fee']).", `marked_red` = ".$markedRed.", sales_notes = '".$salesNotes."', profile_not_completed = ".$profileNotCompleted.", ".$leaveUpdateQuery.", first_come_first_serve = " . $firstComeFirstServe . ", partnership_company_id = ".$post['partnership_company_id'].", updated_at = NOW() WHERE dlID = ".$post['dlID'] ) ;
+//                    $result = $stmt->execute();
+//                } else {
+//                    $stmt = Database::prepare("INSERT INTO `docdetails` (`surgen`, `physician`, `docName`,`docExp`,`docEmail`, `docPhone`, `docDetails`, `docDegree`, `catID`, `spID`, `subspID`, `relief`, `marham`, `pmdc`, `gender`, `willing_for_video_consultancy`, `home_service`, `appointment_instructions`, `appointment_number`, `fix_fee`, `marked_red`, `sales_notes`, `profile_not_completed`,`added_by_user_id`, `on_leave`, `on_leave_from`, `on_leave_to`, `first_come_first_serve`, `partnership_company_id`)".
+//                        " VALUES ('".$surgen."', '".$physician."', '".trim($post['docName'])."', '".$post['docExp']."', '".$post['docEmail']."', '".$post['docPhone']."', '".$post['docDetails']."', '".$post['docDegree']."', '".$post['catID']."', '". $post['specialities'] ."', '". $post['subspecialities'] ."', '". $post['relief'] ."', '". $post['marham'] ."', '". $post['pmdc'] ."', '". $post['gender'] ."', '".$willing_for_video_consultancy."', '".$home_service."', '".$appointmentInstructions."' , '".$post['appointment_number']."', ".intval($post['fix_fee']).", ".$markedRed.", '".$salesNotes."', ".$profileNotCompleted.",".$userId.", ".$onLeave.", ".(!is_null($onLeaveFrom) ? "'".$onLeaveFrom."'" : "NULL").", ".(!is_null($onLeaveTo) ? "'".$onLeaveTo."'" : "NULL").", ".$firstComeFirstServe.", ".$post['partnership_company_id'].")" ) ;
+//                    $result = $stmt->execute ( ) ;
+//                    $lastId = Database::lastInsertId();
+//                    $this->updateDoctorAuthToken((!empty($post['dlID']) ? $post['dlID'] : $lastId), $this->generateDoctorAuthToken($lastId));
+//                }
+//
+//                if(($onLeave == 1) || (($onLeave == 0) && $isDoctorOnLeave)) {
+//                    $this->updateOnLeaveDoctorPoints($lastId, ($onLeave == 1), ($onLeave == 0), $onLeaveFrom, $onLeaveTo);
+//                }
+//
+//
+//                return $lastId;
+
+
+
+
+            } catch(PDOException $e) {
+                return FALSE;
             }
-
-        } catch(PDOException $e) {
-            return 0;
-        }
-        return $result;
-    }
-
-
-
-    public function getDoctorDefaultServices($id = '') {
-        try {
-            $stmt = Database :: prepare ( "SELECT s.sID, s.service
-					FROM services s
-					JOIN servicesdoctor sd on s.sID = sd.sID
-					WHERE sd.dID = $id AND s.defaultService=1" ) ;
-            $stmt -> execute ( ) ;
-            return $stmt -> fetchAll (PDO::FETCH_ASSOC) ;
-        } catch(PDOException $e) {
-            return;
-        }
-        return;
-    }
-
-
-
-    /**
-     * get doctor addon services from database
-     */
-    public function getDoctorAddonServices($id = '') {
-        try {
-            $stmt = Database :: prepare ( "SELECT s.sID, s.service
-					FROM services s
-					JOIN servicesdoctor sd on s.sID = sd.sID
-					WHERE sd.dID = $id AND s.defaultService=0" ) ;
-            $stmt -> execute ( ) ;
-            return $stmt -> fetchAll (PDO::FETCH_ASSOC) ;
-        } catch(PDOException $e) {
-            return;
-        }
-        return;
-    }
-
-
-    /**
-     * get doctor selected areas of interest
-     */
-    public function getDoctorAreasOfInterest($dID) {
-        $result = [];
-        try {
-            $stmt = Database::prepare("SELECT da.area_of_interest_id, ga.title FROM doctor_areas_of_interest da
-										JOIN global_areas_of_interest AS ga ON da.area_of_interest_id = ga.id
-										WHERE da.doctor_id= $dID AND ga.doctor_id = 0");
-            $stmt->execute();
-            $result  = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            $result = [];
-        }
-        return $result;
-    }
-
-    /**
-     * get doctor selected areas of interest
-     */
-    public function getDoctorAddOnAreasOfInterest($dID) {
-        $result = [];
-
-        try {
-            $stmt = Database::prepare("SELECT da.area_of_interest_id, ga.title FROM doctor_areas_of_interest da
-										JOIN global_areas_of_interest AS ga ON da.area_of_interest_id = ga.id
-										WHERE da.doctor_id= $dID AND ga.doctor_id != 0");
-            $stmt->execute();
-            $result  = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            $result = [];
-        }
-        return $result;
-    }
-
-
-
-    /**
-     * get doctor specialities from database
-     */
-    public function getDoctorSpecialities($id = '') {
-        try {
-            $stmt = Database :: prepare ( "SELECT s.spID, s.speciality
-					FROM specialities s
-					JOIN specialitydoctor sd on s.spID = sd.spID
-					WHERE sd.dID = $id" ) ;
-            $stmt -> execute ( ) ;
-            $result = $stmt -> fetchAll (PDO::FETCH_ASSOC) ;
-            return $stmt -> fetchAll (PDO::FETCH_ASSOC) ;
-        } catch(PDOException $e) {
-            return;
-        }
-        return;
-
-
-    }
-
-
-    /**
-     * get appoint times( from database
-     */
-    public function getApttimes($dID = '') {
-        $where = '';
-        if(!empty($dID)) {
-            $where = "WHERE a.dID = $dID";
-        }
-        if(!empty($where)) {
-            $where .= " AND d.deleted_at IS NULL ";
-        }
-        else {
-            $where = "WHERE d.deleted_at IS NULL ";
-        }
-        if(!empty($where)) {
-            $where .= " AND a.deleted_at IS NULL ";
-        }
-        else {
-            $where = "WHERE a.deleted_at IS NULL ";
-        }
-        try {
-            //`dID`, `monday`, `tuesday`, `wednesday`, `thursday`, `friday`, `saturday`, `sunday`, `onCall`, `docFee`, `startTime`, `endTime`, `apptPhone`, `hospitalID`
-
-            $stmt = Database :: prepare ( "SELECT a.`timeID`, d.`id` AS doctorHospitalID, a.`monday`, a.`tuesday`, a.`wednesday`, a.`thursday`, a.`friday`, a.`saturday`, a.`sunday`, a.`onCall`, a.`docFee`, d.`consultancy_fee_referral_on`, d.`doctor_fee_after_hospital_share`, d.`consultancy_referral` ,a.startTime, a.endTime, a.dID, a.apptPhone, a.hospitalID, h.city as hospitalCity , h.name as hospitalName, h.address as hospitalAddress, h.lat, h.lng, h.area as hospitalArea, d.similar_id_1, d.similar_id_2, d.similar_id_3, d.similar_id_4, d.similar_id_5
-								FROM  apttimes a
-								JOIN doclisting d ON a.timeID = d.timeID
-								JOIN hospitals h on a.hospitalID = h.hospitalID
-								$where
-								;" );
-
-
-            $stmt -> execute ( ) ;
-            $result =  $stmt -> fetchAll (PDO::FETCH_ASSOC) ;
-        } catch(PDOException $e) {
-            return 0;
-        }
-        return $result;
-    }
-
-
-
-    /**
-     * This function is used to
-     * get doctor qualifications
-     */
-
-    public function getDoctorQualifications($dID = '') {
-        $result = '';
-        if(!empty($dID)) {
-            try {
-                $stmt = Database::prepare("SELECT dID, institute, qualification, year_from, year_to FROM doctor_qualifications WHERE dID = " . $dID);
-                $stmt->execute();
-                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            } catch (PDOException $e) {
-                return 0;
-            }
-        }
-        return $result;
-    }
-
-
-
-
-    /**
-     * This function is used to
-     * get doctor publications
-     */
-
-    public function getDoctorPublications($dID = '') {
-        $result = '';
-        if(!empty($dID)) {
-            try {
-                $stmt = Database::prepare("SELECT dID, publication, year_of_publication FROM doctor_publications WHERE dID = " . $dID);
-                $stmt->execute();
-                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            } catch (PDOException $e) {
-                return 0;
-            }
-        }
-        return $result;
-    }
-
-
-    /**
-     * This function is used to
-     * get doctor experiences
-     */
-
-    public function getDoctorExperiences($dID = '') {
-        $result = '';
-        if(!empty($dID)) {
-            try {
-                $stmt = Database::prepare("SELECT dID, designation, institute, years, year_from, year_to FROM doctor_experiences WHERE dID = " . $dID);
-                $stmt->execute();
-                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            } catch (PDOException $e) {
-                return 0;
-            }
-        }
-        return $result;
-    }
-
-
-
-
-    /**
-     * This function is used to get doctor selected procedures
-     */
-
-    public function getDoctorProcedures($doctorHospitalID=''){
-
-        $stmt = Database::prepare("SELECT * FROM doctor_procedures WHERE doctor_hospital_id = ".$doctorHospitalID);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    public function getSubSpeciality($specialityID = '') {
-
-
-        try {
-
-            $stmt = Database::prepare ( "SELECT spID, speciality from specialities WHERE parent = $specialityID " ) ;
-            $stmt -> execute () ;
-            $result =  $stmt -> fetchAll (PDO::FETCH_ASSOC) ;
-
-        } catch(PDOException $e) {
-
-            return FALSE;
-
         }
 
 
-        return $result;
+        return $id;
 
 
     }
@@ -328,5 +248,8 @@ class Doctor
 
 
 }
+
+
+
 
 

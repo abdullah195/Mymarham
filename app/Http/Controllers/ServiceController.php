@@ -99,7 +99,7 @@ class ServiceController extends Controller
 
         foreach ($obj as $key => $areaOfInterest) {
             echo '<span class="areasOfInterest">
-							<input class="speciality_areasOfInterest" type="checkbox" id="areasOfInterest_'.$areaOfInterest->id.'" value="'.$areaOfInterest->id.'" name="areasOfInterest[]" />
+							<input class="speciality_areasOfInterest" type="checkbox" id="areasOfInterest_'.$areaOfInterest->id.'" value="'.$areaOfInterest->id.'" name="areasOfInterest11[]" />
 							<label for="services_'.$areaOfInterest->id.'" class="day_label">'.$areaOfInterest->title.'</label>
 						</span>';
         }

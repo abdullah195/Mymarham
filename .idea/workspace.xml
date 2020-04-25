@@ -3,8 +3,11 @@
   <component name="ChangeListManager">
     <list default="true" id="fcbae6cb-a734-4cd6-a1c1-83c864621dd5" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Doctor.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Doctor.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/Http/Controllers/Doctorcontroller.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/Doctorcontroller.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/ServiceController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/ServiceController.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/resources/views/marham/add_doctor.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/marham/add_doctor.blade.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/web.php" beforeDir="false" afterPath="$PROJECT_DIR$/routes/web.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -161,6 +164,7 @@
       <workItem from="1587533897707" duration="2548000" />
       <workItem from="1587558743208" duration="4433000" />
       <workItem from="1587706842628" duration="8907000" />
+      <workItem from="1587791677827" duration="8063000" />
     </task>
     <servers />
   </component>
@@ -184,10 +188,10 @@
       <screen x="0" y="0" width="1366" height="728" />
     </state>
     <state x="474" y="270" key="NewPhpFileDialog/0.0.1366.728@0.0.1366.728" timestamp="1587303071239" />
-    <state x="255" y="159" key="run.anything.popup" timestamp="1587295501828">
+    <state x="255" y="159" key="run.anything.popup" timestamp="1587729028184">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state x="255" y="159" key="run.anything.popup/0.0.1366.728@0.0.1366.728" timestamp="1587295501828" />
+    <state x="255" y="159" key="run.anything.popup/0.0.1366.728@0.0.1366.728" timestamp="1587729028184" />
     <state x="262" y="-1" width="840" height="1034" key="search.everywhere.popup" timestamp="1587320335860">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
