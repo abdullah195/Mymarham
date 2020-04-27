@@ -1,14 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="fcbae6cb-a734-4cd6-a1c1-83c864621dd5" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Doctor.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Doctor.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/Doctorcontroller.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/Doctorcontroller.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/ServiceController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/ServiceController.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/marham/add_doctor.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/marham/add_doctor.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/web.php" beforeDir="false" afterPath="$PROJECT_DIR$/routes/web.php" afterDir="false" />
-    </list>
+    <list default="true" id="fcbae6cb-a734-4cd6-a1c1-83c864621dd5" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
