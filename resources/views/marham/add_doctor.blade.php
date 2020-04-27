@@ -117,6 +117,7 @@
             <div class="col-md-6">
                 <label for="subspecialities">Sub Speciality <span style="color: red">*</span></label>
                 <select name="subspecialities" class="form-control" id="subspecialities">
+
                 </select>
             </div>
         </div>
@@ -300,7 +301,7 @@
 
                             request.fail(function( jqXHR, textStatus ) {
 
-                                alert("failed");
+                                alert("failed Refress and try again");
 
                                 $('#services_box').html('Please select speciality');
 
@@ -320,7 +321,6 @@
 
                             areasOfInterestRequest.done(function(data){
 
-                                alert("get_speciality_areas_of_interest"+data);
                                 $("#speciality_areas_of_interest_box").html(data);
                             });
 
@@ -332,7 +332,6 @@
 
                             AddOnareasOfInterestRequest.done(function(data){
 
-                                alert("add_on_areas_of_interest_box"+data);
                                 $("#add_on_areas_of_interest_box").html(data);
                             });
 
@@ -621,10 +620,11 @@
                         '<select name="hospitals['+time_counter+']" class="form-control" id="hospitals_'+time_counter+'" onChange="update_address('+ time_counter +', this)">'+
                         '<option value="">--Select Hospital--</option>'+
                         '@foreach($hospitals as $hospital)'+
-                        '<span style="display:none;" id="hidden_city_{{$hospital->hospitalID}}">{{$hospital->city}};</span>'+
-                        '<span style="display:none;" id="hidden_address_{{$hospital->hospitalID}}">{{$hospital->address}},{{$hospital->city}}</span>'+
-                        '<span style="display:none;" id="hidden_apptPhone_{{$hospital->hospitalID}}">{{$hospital->address}}</span>'+
-                        '<span style="display:none;" id="hidden_hospitalAdminNumber_{{$hospital->hospitalID}}">{{$hospital->admin_number}}</span>'+
+                        {{--'<span style="display:none;" id="hidden_city_{{$hospital->hospitalID}}">{{$hospital->city}};</span>'+--}}
+                        {{--'<span style="display:none;" id="hidden_address_{{$hospital->hospitalID}}">{{$hospital->address}},{{$hospital->city}}</span>'+--}}
+                        {{--'<span style="display:none;" id="hidden_apptPhone_{{$hospital->hospitalID}}">{{$hospital->address}}</span>'+--}}
+                        {{--'<span style="display:none;" id="hidden_hospitalAdminNumber_{{$hospital->hospitalID}}">{{$hospital->admin_number}}</span>'+--}}
+
                         '<option value="{{$hospital->hospitalID}}">{{$hospital->name}}</option>'+
                         '@endforeach'+
                         '</select>'+
