@@ -7,7 +7,6 @@
 <div class="container">
 
 
-
     <h2>Add New Doctor</h2>
     <form name="doctor_form" id="doctor_form" action="" method="post" enctype="multipart/form-data">
       @csrf
@@ -810,6 +809,8 @@
                     text: 0,
                     selected: true
                 }));
+
+
                 $(event).removeAttr('onclick');
                 $(event).addClass('remove_field_button').text('-');
                 $(event).on('click', function() {
