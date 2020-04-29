@@ -34,6 +34,8 @@ class Doctorcontroller extends Controller
 
 
         return view('marham.add_doctor', compact('users','categories','specialities','subspecialities','hospitals','specialitiesAndSubSpecialities'));
+
+
     }
 
 
@@ -147,7 +149,7 @@ class Doctorcontroller extends Controller
                     }
 
 
-                    $specialities = '';
+                    $specialities = 0;
                     if(isset($post['specialities']) && !empty($post['specialities'])) {
                         $specialities = $post['specialities'];
                     }
@@ -260,6 +262,13 @@ class Doctorcontroller extends Controller
                     );
 
 
+
+
+
+
+
+
+
                 } catch(PDOException $e) {
 
 
@@ -279,6 +288,24 @@ class Doctorcontroller extends Controller
                if (!empty($id)){
 
                    //now we have to save doctor services in table
+
+                   if(isset($post['hospitals']) && !empty($post['hospitals'])){
+
+
+
+//                       if(isset($post['hospitalsToRemove'])){
+////                           $this->deleteDoctorApptTime($post['hospitalsToRemove']);
+//                       }
+
+
+                       $timeID = $this->addDoctorApptime($id ,$post);
+
+
+                   }
+
+
+
+
 
                    foreach($post['services'] as $service) {
                        $this->addDoctorService($id, $service);
@@ -304,18 +331,29 @@ class Doctorcontroller extends Controller
 
 
 
-
-                   //Save doctor timings in database
-                   if(isset($post['hospitals']) && !empty($post['hospitals'])){
-//
-//                       if(isset($post['hospitalsToRemove'])){
-////                           $this->deleteDoctorApptTime($post['hospitalsToRemove']);
-//                       }
-                       $timeID = $this->addDoctorApptime($id ,$post);
+                   //now complete data is save now
 
 
+                   $users = DB::table('users')->get();
+                   $categories = DB::table('categories')->select('catID','catName')->get();
+                   $specialities = DB::table('specialities')->select('spID', 'speciality')->get();
+                   $subspecialities = DB::table('specialities')->select('spID', 'speciality')->where('parent','33')->get();
+                   $hospitals = DB::table('hospitals')->get();
 
-                   }
+                   $specialitiesAndSubSpecialities = DB::table("specialities")->select('spID','parent','speciality','slug')
+                       ->whereNotIn('spID',function($query){
+                           $query->select('parent')->from('specialities');
+                       })
+                       ->orderBy('speciality')
+                       ->get();
+
+
+
+                   echo '<script>alert("Data Successfully Added")</script>';
+
+                   return view('marham.add_doctor', compact('users','categories','specialities','subspecialities','hospitals','specialitiesAndSubSpecialities'));
+
+
 
                }
 
@@ -323,6 +361,28 @@ class Doctorcontroller extends Controller
 
 
 
+    function addsimilarSpIds($dId = 0, $similarIds = [])
+    {
+
+
+        if (!empty($dId)) {
+
+
+            for ($i = 0; $i < count($similarIds) && ($i < 5); $i++) {
+
+                $affected = DB::table('doclisting')
+                    ->where('dlID', $dId)
+                    ->update(
+                        [
+                            'similar_id_'.($i + 1) => $similarIds[$i]
+                        ]
+                    );
+
+            }
+
+        }
+
+    }
 
 
     function addDoctorApptime($dID = '',$post = ''){
@@ -333,17 +393,6 @@ class Doctorcontroller extends Controller
 
         if(!empty($dID) && !empty($post)) {
             try {
-
-
-                $doclistingResult = DB::table('doclisting')->select('historyTime','patientsPerHour','averageTimePerPatient','appointmentMethodID','appointmentMethod','appointmentMethod','nextSlot')
-                    ->where('dlID','=',$dID)
-                    ->whereNull('deleted_at')
-                    ->limit(1);
-
-
-                if(!empty($doclistingResult[0])) {
-                    $doclistingResult = $doclistingResult[0];
-                }
 
 
                 //Save doctor listing in database
@@ -464,8 +513,11 @@ class Doctorcontroller extends Controller
                     $listing = $this->addOrUpdateDoctorListingNew($time_counter, $timeID, $dID, $post);
                 }
 
+
                 // $stmt = Database:: prepare("UPDATE doclisting SET historyTime = ".$doclistingResult['historyTime'].", patientsPerHour = ".$doclistingResult['patientsPerHour'].", averageTimePerPatient = ".$doclistingResult['averageTimePerPatient'].", appointmentMethodID = ".$doclistingResult['appointmentMethodID'].", appointmentMethod = '".$doclistingResult['appointmentMethod']."', nextSlot = ".$doclistingResult['nextSlot'].", updatedDate = '".date('Y-m-d H:i:s')."' WHERE dlID = " . $dID . " AND deleted_at = '".date('Y-m-d H:i:s')."' ");
                 // $stmt->execute();
+
+
             } catch(PDOException $e) {
                 return FALSE;
             }
@@ -538,6 +590,7 @@ class Doctorcontroller extends Controller
     }
 
 
+
     function addOrUpdateDoctorListingNew($index='', $timeID= '', $dID='', $post=''){
 
 
@@ -545,56 +598,41 @@ class Doctorcontroller extends Controller
         $isConsultancyReferralChanged = false;
         //If valid request
         if($dID) {
-            try {
-
-                $qry_result = DB::table('docdetails as d')
-                    ->join('categories as c', 'd.catID', '=', 'c.catID')
-                    ->join('specialities as s', 's.spID', '=', $post['specialities'])
-                    ->join('apttimes as t', 'd.dlID', '=', 't.dID')
-                    ->join('hospitals as h', 't.hospitalID', '=', 'h.hospitalID')
-                    ->select(   'd.dlID', 'd.docEmail', 'd.docPhone', 'd.docPhone', 'd.docPhone', 'd.docPhone','d.docPic', 'd.docDetails', 'd.docDegree', 'd.gender','d.docName','d.docExp','c.catName','c.catID','t.*','h.*','s.speciality','s.spID','h.type as hospital_type','d.active_at','d.inactive_at')
-                    ->where('d.dlID','=',$dID)
-                    ->whereNull('t.deleted_at')
-                    ->get();
 
 
-//                $stmt = Database :: prepare ("SELECT d.dlID, d.docEmail, d.docPhone, d.docPic, d.`docDetails`, d.docDegree, d.gender, d.docName, d.docExp, c.catName, c.catID, t.*, h.*, s.speciality, s.spID, h.`type` as hospital_type, d.`active_at`, d.`inactive_at`
-//					FROM docdetails d
-//					JOIN categories c on d.catID = c.catID
-//					JOIN specialities s on s.spID = '".$post['specialities']."'
-//					JOIN apttimes t on d.dlID = t.dID and t.timeID = $timeID
-//					JOIN hospitals h on t.hospitalID = h.hospitalID
-//					Where d.dlID = $dID AND t.deleted_at IS NULL " ) ;
-//
-//                $stmt -> execute ( ) ;
-//                $qry_result =  $stmt->fetchAll (PDO::FETCH_ASSOC) ;
+//            try {
 
 
 
-//                $stmt = Database::prepare( "SELECT speciality FROM specialities WHERE spID =  ".$post['subspecialities']." ");
-//                $stmt->execute();
-//                $subspecialitiesresult =  $stmt->fetchAll (PDO::FETCH_ASSOC) ;
-
-
-
-                $subspecialitiesresult = DB::table('specialities')
-                    ->select('speciality')
-                    ->where('spID','=',$post['subspecialities'])
-                    ->get();
+                $qry_result = DB::table('docdetails')
+                    ->where('dlID','=',$dID)->get();
 
 
 
                 if(!empty($qry_result)) {
 
+                    $selectedhospital = DB::table('hospitals')
+                        ->where('hospitalID','=',$post['hospitals'][$index])
+                        ->get();
 
-                    $dr_details = $qry_result[0];
-                    $dr_name = trim($dr_details['docName']);
-                    $dr_degree = $dr_details['docDegree'];
-                    $dr_city = trim($dr_details['city']);
+                    $selectedhospital= json_decode($selectedhospital);
+
+                    $hospitaldataindex= $index-1;
+
+//                    var_dump($selectedhospital);
+
+//                    $selectedhospital[$hospitaldataindex]->hospitalID;
+
+
+                    $dr_details = $post;
+                    $dr_name = trim($post['docName']);
+                    $dr_degree = $post['docDegree'];
+
                     $dr_speciality_ID = !empty($post['subspecialities']) ? $post['subspecialities'] : $post['specialities'];
                     $dr_speciality_slug = $this->getSpecialitySlug($dr_speciality_ID);
                     $currentDoctorSlug = $this->getDoctorSlugAttribute($dID);
                     $dr_slug = 'doctors/slugnotfound';
+
 //                    $dr_slug = 'doctors/'.$this->slugify($dr_city).'/'.$this->slugify($dr_speciality_slug).'/'.$this->slugify($dr_name);
 //                    if((!is_null($currentDoctorSlug) && !empty($currentDoctorSlug)) && (strtolower($currentDoctorSlug) != strtolower($dr_slug))) {
 //                        $this->addRedirects($currentDoctorSlug, $dr_slug, 1);
@@ -602,20 +640,24 @@ class Doctorcontroller extends Controller
 
 
 
-                    $consultancy_fee_share_on = $post['consultancy_fee_share_on'][$index];
-                    $doc_fee_after_hospital_share = $post['docFeeAfterShare'][$index];
-                    $consultancy_referral = $post['consultancy_referral'][$index];
-                    $hospitalType = $dr_details['hospital_type'];
-                    $contractType = $post['contract_type'][$index];
-                    $hospitalAdminNumber = $post['hospitalAdminNumber'][$index];
+
+
+//                    $consultancy_fee_share_on = 0;
+//                    $doc_fee_after_hospital_share = 0;
+//                    $consultancy_referral = 0;
+
+
+
+
+
                     $consultationTimingType = $post['consultation_timing_type'][$index];
+
+
                     //Save doctor listing in database
+
 
                     //check if timeID exist
                     $doctorHospitalID = 0;
-//                    $stmt = Database::prepare("SELECT id FROM doclisting WHERE timeID= '".$timeID."' AND deleted_at IS NULL ");
-//                    $stmt->execute();
-//                    $isExist = $stmt->fetch(PDO::FETCH_ASSOC);
 
 
                     $isExist = DB::table('doclisting')
@@ -624,81 +666,348 @@ class Doctorcontroller extends Controller
                         ->whereNull('deleted_at')
                         ->get();
 
-                    if(!is_null($isExist['id'])){
-
-                        $doctorHospitalID = $isExist['id'];
-
-//                        if(APP_ENV == 'production') {
-//                            $isConsultancyReferralChanged = $this->isConsultancyReferralChanged($timeID, $consultancy_referral);
-//                        }
-
-                        $stmt = Database::prepare("UPDATE `doclisting` SET `docName`= '".trim($dr_details['docName'])."',`docPic`= '".$dr_details['docPic']."', `docExp`='".$dr_details['docExp']."',`docFee`= '".$dr_details['docFee']."', `catID`='".$dr_details['catID']."', `catName`='".$dr_details['catName']."', `spID`='".$post['specialities']."', `subspID`='".$post['subspecialities']."', `speciality_id` = '".(($post['subspecialities'] == 0) ? $post['specialities'] : $post['subspecialities'])."', `speciality` = '".$dr_details['speciality']."', `subSpeciality` = '".$subspecialitiesresult[0]['speciality']."', `speciality_name`='".(($post['subspecialities'] == 0) ? $dr_details['speciality'] : $subspecialitiesresult[0]['speciality'])."', `gender`='".$dr_details['gender']."', `monday`='".$dr_details['monday']."', `tuesday`='".$dr_details['tuesday']."', `wednesday`='".$dr_details['wednesday']."', `thursday`='".$dr_details['thursday']."', `friday`='".$dr_details['friday']."', `saturday`='".$dr_details['saturday']."', `sunday`='".$dr_details['sunday']."', `startTime`='".$dr_details['startTime']."', `endTime`='".$dr_details['endTime']."', `onCall`='".$dr_details['onCall']."', `apptPhone`='".$dr_details['apptPhone']."', `hospital_admin_number` = '".$hospitalAdminNumber."', `hospitalID`='".$dr_details['hospitalID']."', `hospitalName`='".$dr_details['name']."', `hospitalAddress`='".$dr_details['address']."', `hospitalCity`='".$dr_details['city']."', `lat`='".$dr_details['lat']."', `lng`='".$dr_details['lng']."', `hospitalArea`='".$dr_details['area']."', `hospital_area_slug`='".$this->slugify($dr_details['area'])."', `doctorSoundex`='".$this->getSoundex(trim($dr_details['docName']), false)."', `specialitySoundex`='".$this->getSoundex(trim($dr_details['speciality']), true).$this->getSoundex($subspecialitiesresult[0]['speciality'], true)."', `hospitalSoundex`='".$this->getSoundex($dr_details['name'], true)."', `doctorSlug`='".$dr_slug."', `docDegree`='".$dr_details['docDegree']."' ,`consultancy_fee_referral_on` = '".$consultancy_fee_share_on."', `doctor_fee_after_hospital_share` = '".$doc_fee_after_hospital_share."', `consultancy_referral` = '".$consultancy_referral."', `contract_type` = ".$contractType.", `updatedDate` = '".date('Y-m-d H:i:s')."', hospital_type = ".$hospitalType.", consultation_timing_type = ".$consultationTimingType." Where `timeID`='".$timeID."' AND deleted_at IS NULL ");
-                        $result = $stmt->execute();
 
 
-
-
+                    if(false){
 
                     }else{
 
-                        $stmt = Database :: prepare ("INSERT INTO `doclisting` (`dlID`, `docName`, `docPic`, `docExp`, `docFee`, `catID`, `catName`, `spID`, `subspID`, `speciality_id`, `speciality`, `subSpeciality`, `speciality_name`, `gender`, `timeID`, `monday`, `tuesday`, `wednesday`, `thursday`, `friday`, `saturday`, `sunday`, `startTime`, `endTime`, `onCall`, `apptPhone`, `hospital_admin_number`, `hospitalID`, `hospitalName`, `hospitalAddress`, `hospitalCity`, `lat`, `lng`, `hospitalArea`, `hospital_area_slug`, `doctorSoundex`, `specialitySoundex`, `hospitalSoundex`, `doctorSlug`, `docDegree`, `consultancy_fee_referral_on`, `doctor_fee_after_hospital_share`, `consultancy_referral`, `hospital_type`, `active_at`, `contract_type`,`added_by_user_id`, `consultation_timing_type`)".
-                            " VALUES ('".$dID."', '".trim($dr_details['docName'])."', '".$dr_details['docPic']."', '".$dr_details['docExp']."', '".$dr_details['docFee']."', '".$dr_details['catID']."', '".$dr_details['catName']."', '".$post['specialities']."', '".$post['subspecialities']."', '".(($post['subspecialities'] == 0) ? $post['specialities'] : $post['subspecialities'])."', '".$dr_details['speciality']."', '".$subspecialitiesresult[0]['speciality']."', '".(($post['subspecialities'] == 0) ? $dr_details['speciality'] : $subspecialitiesresult[0]['speciality'])."', '".$dr_details['gender']."', '".$dr_details['timeID']."', '".$dr_details['monday']."', '".$dr_details['tuesday']."', '".$dr_details['wednesday']."', '".$dr_details['thursday']."', '".$dr_details['friday']."', '".$dr_details['saturday']."', '".$dr_details['sunday']."', '".$dr_details['startTime']."', '".$dr_details['endTime']."', '".$dr_details['onCall']."', '".$dr_details['apptPhone']."', '".$hospitalAdminNumber."', '".$dr_details['hospitalID']."', '".addslashes($dr_details['name'])."', '".addslashes($dr_details['address'])."', '".$dr_details['city']."', '".$dr_details['lat']."', '".$dr_details['lng']."', '".addslashes($dr_details['area'])."', '".$this->slugify($dr_details['area'])."', '".$this->getSoundex(trim($dr_details['docName']), false)."', '".$this->getSoundex($dr_details['speciality'], true) . $this->getSoundex($subspecialitiesresult[0]['speciality'], true)."', '".$this->getSoundex($dr_details['name'], true)."', '".$dr_slug."', '".$dr_details['docDegree']."', '".$consultancy_fee_share_on."', '".$doc_fee_after_hospital_share."', '".$consultancy_referral."', ".$hospitalType.", ". ((!is_null($dr_details['active_at']) && is_null($dr_details['inactive_at'])) ? "NOW()": "NULL") .", ".$contractType.",".$userId.", ".$consultationTimingType.")" ) ;
-                        $result = $stmt->execute();
-                        $doctorHospitalID = Database::lastInsertId();
-                    }
+                     //   $sspid=($post['subspecialities'] == 0) ? $post['specialities'] : $post['subspecialities'];
+                      //  $speciality_name=($post['subspecialities'] == 0) ? $post['specialities'] : $post['subspecialities'];
 
 
-                    if($consultancy_referral != 0) {
-                        $stmt = Database::prepare("UPDATE docdetails SET on_panel_at = '" . date('Y-m-d H:i:s') . "', on_panel_by_user_id = " . $userId . " WHERE dlID = " . $dID. " AND on_panel_at IS NULL");
-                        $stmt->execute();
-                    }
+                        $subspecialities=0;
+                        if(isset($post['subspecialities'])){
 
-                    if(isset($post['number_of_procedures_'.($index)])){
+                            $subspecialities=$post['subspecialities'];
 
-                        $procedures = $post['number_of_procedures_'.($index)];
-                        foreach ($procedures as $proceduresIndex => $procedure) {
-
-                            $procedureArr = explode('_', $procedure);
-                            $procedureID = $procedureArr[0];
-                            $proceduresNumber = $procedureArr[1];
-
-                            if(isset($post['procedure_fee_share_on_'.($index).'_'.($proceduresNumber)]) && !empty($post['procedure_fee_share_on_'.($index).'_'.($proceduresNumber)])){
-
-
-                                $procedure_on = $post['procedure_fee_share_on_'.($index).'_'.($proceduresNumber)];
-                                $procedure_referral_on = $procedure_on;
-                                if(isset($post['procedureName']) && !empty($post['procedureName'])){
-                                    if(isset($post['procedureName'][$index]) && isset($post['procedureName'][$index][$proceduresIndex])){
-                                        $procedureName = $post['procedureName'][$index][$proceduresIndex];
-
-                                        $procedure_url = $post['procedure_url'][$index][$proceduresIndex];
-                                        $hospital_procedure_fee = $post['hospital_procedure_fee'][$index][$proceduresIndex];
-                                        $doctor_procedure_fee = $post['doctor_procedure_fee'][$index][$proceduresIndex];
-                                        $procedure_referral = $post['procedure_referral'][$index][$proceduresIndex];
-
-                                        if($procedureID != 0){
-                                            $stmt = Database::prepare("UPDATE `doctor_procedures` SET `procedure_referral_on` = $procedure_referral_on, `procedure_id` = $procedureName, `procedure_url` = '".$procedure_url."', `total_fee` = $hospital_procedure_fee, `doctor_fee` = $doctor_procedure_fee, `procedure_referral` = $procedure_referral, `contract_type` = $contract_type WHERE `id` = ".$procedureID);
-                                            $result = $stmt->execute();
-                                        }else{
-                                            $stmt = Database::prepare("INSERT INTO `doctor_procedures` (`doctor_hospital_id`, `doctor_id`, `procedure_referral_on`, `procedure_id`, `procedure_url`, `total_fee`, `doctor_fee`, `procedure_referral`, `contract_type`)
-															VALUES ($doctorHospitalID, $dID, $procedure_referral_on , $procedureName , '".$procedure_url."', $hospital_procedure_fee, $doctor_procedure_fee, $procedure_referral, $contractType) ");
-
-                                            $result = $stmt->execute();
-                                        }
-                                    }
-                                }
-
-                            }
                         }
+
+
+                        $specialities=0;
+                        if(isset($post['specialities'])){
+                            $specialities=$post['specialities'];
+
+                        }
+                        else{
+                            $subspecialities=0;
+                        }
+
+
+
+                        $docPic='';
+                        if (isset($dr_details['docPic'])){
+                            $docPic=$dr_details['docPic'];
+                        }
+
+                        $gender=0;
+                        if (isset($dr_details['gender'])){
+                            $gender=$dr_details['gender'];
+                        }
+
+
+                        $docExp=0.0;
+                        if (isset($dr_details['docExp'])){
+                            $docExp=$dr_details['docExp'];
+                        }
+
+
+
+                        $catID=0;
+                        if (isset($dr_details['catID'])){
+                            $catID=$dr_details['catID'];
+                        }
+
+                        $catName='';
+                        if (isset($dr_details['catName'])){
+                            $catName=$dr_details['catName'];
+                        }
+
+                        $monday=0;
+                        if (isset($dr_details['monday'][$index])){
+                            $monday=$dr_details['monday'][$index];
+                        }
+
+
+                        $tuesday=0;
+                        if (isset($dr_details['tuesday'][$index])){
+                            $tuesday= $dr_details['tuesday'][$index];
+                        }
+
+                        $wednesday=0;
+                        if (isset($dr_details['wednesday'][$index])){
+                            $wednesday= $dr_details['wednesday'][$index];
+                        }
+
+                        $thursday=0;
+                        if (isset($dr_details['thursday'][$index])){
+                            $thursday= $dr_details['thursday'][$index];
+                        }
+
+                        $friday=0;
+                        if (isset($dr_details['friday'][$index])){
+                            $friday= $dr_details['friday'][$index];
+                        }
+
+                        $saturday=0;
+                        if (isset($dr_details['saturday'][$index])){
+                            $saturday= $dr_details['saturday'][$index];
+                        }
+
+
+                        $sunday=0;
+                        if (isset($dr_details['sunday'][$index])){
+                            $sunday= $dr_details['sunday'][$index];
+                        }
+
+
+                        $onCall=0;
+                        if (isset($dr_details['onCall'][$index])){
+                            $onCall=$dr_details['onCall'][$index];
+                        }
+
+                        $startTime=0;
+                        if (isset($dr_details['startTime'][$index])){
+                            $startTime= $dr_details['startTime'][$index];
+                        }
+
+
+                        $endTime=0;
+                        if (isset($dr_details['endTime'][$index])){
+                            $endTime=$dr_details['endTime'][$index];
+                        }
+
+                        $apptPhone=0;
+                        if (isset($dr_details['apptPhone'][$index])){
+
+                            $apptPhone= $dr_details['apptPhone'][$index];
+
+                        }
+
+
+
+                        $consultancy_fee_share_on='';
+                        if (isset($post['consultancy_fee_share_on'][$index])){
+                            $consultancy_fee_share_on = $post['consultancy_fee_share_on'][$index];
+                        }
+
+
+                        $doc_fee_after_hospital_share='';
+                        if (isset($post['docFeeAfterShare'][$index])){
+                            $doc_fee_after_hospital_share = $post['docFeeAfterShare'][$index];
+                        }
+
+
+
+                        $consultancy_referral='';
+                        if (isset($post['consultancy_referral'][$index])){
+
+                            $consultancy_referral =$post['consultancy_referral'][$index];
+
+                        }
+
+                        $hospitalType = 0;
+                        $contractType = 1;
+
+
+
+                        $hospitalAdminNumber=0;
+                        if (isset($post['hospitalAdminNumber'][$index])){
+                            $hospitalAdminNumber=$post['hospitalAdminNumber'][$index];
+                        }
+
+
+
+                        $docFee=0.0;
+                        if (isset($dr_details['docFee'][$index])){
+                            $docFee=$dr_details['docFee'][$index];
+                        }
+
+
+//                        $selectedhospital[$hospitaldataindex]->hospitalID;
+//                        $selectedhospital[$hospitaldataindex]->name;
+//                        $selectedhospital[$hospitaldataindex]->address;
+//                        $selectedhospital[$hospitaldataindex]->city;
+//                        $selectedhospital[$hospitaldataindex]->lat;
+//                        $selectedhospital[$hospitaldataindex]->lng;
+//                        $selectedhospital[$hospitaldataindex]->area;
+//                        $selectedhospital[$hospitaldataindex]->area_slug;
+
+
+                        $sp=0;
+                        if (isset($dr_details['specialities'])){
+                            $sp=$dr_details['specialities'];
+                        }
+
+
+//                        var_dump($dID);
+//                        var_dump($docExp);
+//                        var_dump($docFee);
+//                        var_dump($catID);
+//                        var_dump($catName);
+//                        var_dump($dr_details['specialities']);
+
+
+                        $sepid=0;
+                        if (isset($dr_details['specialities'])){
+                            $sepid=$dr_details['specialities'];
+                        }
+
+
+//
+//                        var_dump($subspecialities);
+//                        var_dump($sepid);
+//                        var_dump($subspecialities);
+//                        var_dump($specialities);
+//                        var_dump($subspecialities);
+//                        var_dump($specialities);
+//                        var_dump($gender);
+//                        var_dump($timeID);
+//                        var_dump($monday);
+//                        var_dump($tuesday);
+//                        var_dump($wednesday);
+//                        var_dump($thursday);
+//                        var_dump($friday);
+//                        var_dump($saturday);
+//                        var_dump($sunday);
+//                        var_dump($startTime);
+//                        var_dump($endTime);
+//                        var_dump($onCall);
+//                        var_dump($apptPhone);
+//                        var_dump($hospitalAdminNumber);
+
+//                        $aaaa="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+//                        var_dump($aaaa);
+//                        var_dump($docFee);
+
+
+                        $doctorHospitalID = DB::table('doclisting')->insertGetId(
+                                [
+                                    'dlID' =>$dID,
+                                    'docName' =>$dr_details['docName'],
+                                    'docPic' =>$docPic,
+                                    'docExp' =>$docExp,
+                                    'docFee' =>$docFee,
+                                    'catID' =>$catID,
+                                    'catName' =>$catName,
+                                    'spID' =>$sepid,
+                                    'subspID' =>$subspecialities,
+                                    'speciality_id' =>$sepid,
+                                    'speciality' =>$specialities,
+                                    'subSpeciality' =>$subspecialities,
+                                    'speciality_name' =>$specialities,
+                                    'gender' =>$gender,
+                                    'timeID'=>$timeID,
+                                    'monday'=>$monday,
+                                    'tuesday'=>$tuesday,
+                                    'wednesday'=>$wednesday,
+                                    'thursday'=>$thursday,
+                                    'friday'=>$friday,
+                                    'saturday' =>$saturday,
+                                    'sunday'=>$sunday,
+                                    'startTime' =>$startTime,
+                                    'endTime' =>$endTime,
+                                    'onCall'=>$onCall,
+                                    'apptPhone' =>$apptPhone,
+                                    'hospital_admin_number' =>$hospitalAdminNumber,
+                                    'hospitalID'=>$selectedhospital[$hospitaldataindex]->hospitalID,
+                                    'hospitalName' =>$selectedhospital[$hospitaldataindex]->name,
+                                    'hospitalAddress'=>$selectedhospital[$hospitaldataindex]->address,
+                                    'hospitalCity'=>$selectedhospital[$hospitaldataindex]->city,
+                                    'lat' =>$selectedhospital[$hospitaldataindex]->lat,
+                                    'lng' =>$selectedhospital[$hospitaldataindex]->lng,
+                                    'hospitalArea' =>$selectedhospital[$hospitaldataindex]->area,
+                                    'hospital_area_slug'=>$selectedhospital[$hospitaldataindex]->area_slug,
+                                    'doctorSoundex' =>"MBBS",
+                                    'specialitySoundex' =>"ENT",
+                                    'hospitalSoundex'=>"nohospitalsoundex",
+                                    'doctorSlug' =>"nodoctorslug",
+                                    'docDegree'=>$dr_details['docDegree'],
+                                    'consultancy_fee_referral_on' =>$consultancy_fee_share_on,
+                                    'doctor_fee_after_hospital_share' =>$doc_fee_after_hospital_share,
+                                    'consultancy_referral'=>$consultancy_referral,
+                                    'hospital_type'=>$hospitalType,
+                                    'contract_type'=>$contractType
+
+                                ]
+                        );
+
+
+                        if (isset($post['similarSpIds'])){
+
+                            $this->addsimilarSpIds($dID,$post['similarSpIds']);
+
+                        }
+
+
+                    }
+
+
+//                    if($consultancy_referral != 0) {
+//                        $stmt = Database::prepare("UPDATE docdetails SET on_panel_at = '" . date('Y-m-d H:i:s') . "', on_panel_by_user_id = " . $userId . " WHERE dlID = " . $dID. " AND on_panel_at IS NULL");
+//                        $stmt->execute();
+//                    }
+
+
+//                    var_dump("ready to go in procedure");
+
+//                    dd($post);
+
+//                       $post[procedureName[$index]];
+//                       $post[procedure_url[$index]];
+//                       $post[hospital_procedure_fee[$index]];
+//                       $post[doctor_procedure_fee[$index]];
+//                       $post[procedure_referral[$index]];
+
+
+
+
+
+                    if(isset($post["procedureName"])){
+
+                        $procedureName=$post["procedureName"][$index];
+                        $procedure_url=$post["procedure_url"][$index];
+                        $hospital_procedure_fee=$post["hospital_procedure_fee"][$index];
+                        $doctor_procedure_fee=$post["doctor_procedure_fee"][$index];
+                        $procedure_referral=$post["procedure_referral"][$index];
+
+                        for ($i=0; $i<count($procedureName); $i++){
+
+
+//                            var_dump($procedureName[$i]);
+//                            var_dump($procedure_url[$i]);
+//                            var_dump($hospital_procedure_fee[$i]);
+//                            var_dump($doctor_procedure_fee[$i]);
+//                            var_dump($procedure_referral[$i]);
+
+
+                            $result = DB::table('doctor_procedures')->insertGetId(
+                                [
+                                    'doctor_hospital_id' =>$doctorHospitalID,
+                                    'doctor_id'=>$dID,
+                                    'procedure_referral_on' =>0,
+                                    'procedure_id' =>$procedure_referral[$i],
+                                    'procedure_url' =>$procedure_url[$i],
+                                    'total_fee' =>$hospital_procedure_fee[$i],
+                                    'doctor_fee' =>$doctor_procedure_fee[$i],
+                                    'procedure_referral' =>$procedure_referral[$i],
+                                    'contract_type' =>1
+                                ]
+                            );
+
+
+                        }
+
+
+
+
+//                        dd($post);
+
+
+
                     }
 
                 }
-            } catch(PDOException $e) {
-                return FALSE;
-            }
-
-
-
 
         }
 
@@ -713,12 +1022,7 @@ class Doctorcontroller extends Controller
 
     function getSpecialitySlug($spID = ''){
 
-//        $stmt = Database::prepare("SELECT slug FROM specialities WHERE spID = ".$spID);
-//        $stmt->execute();
-//        $result = $stmt->fetchAll(PDO::FETCH_ASSOC)[0]['slug'];
-
-
-        $result = DB::table('specialities')->select('slug')->get();
+        $result = DB::table('specialities')->select('slug')->where('spID','=',$spID)->get();
         return $result;
 
     }
@@ -726,46 +1030,14 @@ class Doctorcontroller extends Controller
     function getDoctorSlugAttribute($dID = 0, $city = null, $spID = 0){
 
 
-        return "Noslugadded";
-//
-//        $where  = '';
-//        if(!empty($dID)) {
-//            $where .= !empty($where) ? ' AND dlID = ' . $dID : ' WHERE dlID = ' . $dID ;
-//        }
-//
-//        if(!is_null($city)) {
-//            $where .= !empty($where) ? " AND hospitalCity = '" . $city . "' " : " WHERE hospitalCity = " . $city . "' " ;
-//        }
-//
-//        if(!empty($spID)) {
-//            $where .= !empty($where) ? ' AND (spID = ' . $spID . ' OR subspID = ' . $spID . ' ) ' : ' WHERE (spID = ' . $spID . ' OR subspID = ' . $spID . ' ) ' ;
-//        }
-//
-//
-//        $where .= !empty($where) ? " AND doclisting.deleted_at IS NULL " : " WHERE doclisting.deleted_at IS NULL ";
-//        $where .= !empty($where) ? " AND doclisting.hospital_type = 1 " : " WHERE doclisting.hospital_type = 1 ";
-//
-//        if(!empty($where)) {
-//            $stmt = Database::prepare("SELECT doctorSlug FROM doclisting $where LIMIT 1 ");
-//            $stmt->execute();
-//            $result = $stmt->fetch(PDO::FETCH_ASSOC);
-//            return isset($result['doctorSlug']) ? $result['doctorSlug'] : null;
-//
-//            $result = DB::table('doclisting')->select('doctorSlug')->get();
-//            return $result;
-//
-//
-//        } else {
-//            return null;
-//        }
-
-
+        return "Doctorslugadded";
 
 
     }
 
-    function slugify(){
 
+
+    function slugify(){
 
 
     }
